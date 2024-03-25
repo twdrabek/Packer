@@ -5,7 +5,7 @@ source "proxmox-iso" "kali-rolling-lab" {
   */
     # VM OS Settings
     # (Option 1) Local ISO File
-  iso_file = "Mass:iso/kali-linux-2024.1-installer-amd64.iso"
+  iso_file = var.ISO_FILE
     # - or -
     # (Option 2) Download ISO
   // iso_checksum = "sha256:c150608cad5f8ec71608d0713d487a563d9b916a0199b1414b6ba09fce788ced"
@@ -17,8 +17,8 @@ source "proxmox-iso" "kali-rolling-lab" {
   */
   proxmox_url = var.PM_API_URL
   insecure_skip_tls_verify = var.PM_TLS_INSECURE
-  username = var.PM_USER
-  password = var.PM_PASSWORD
+  username = "${var.PM_API_TOKEN_ID}"
+  token = "${var.PM_API_TOKEN_SECRET}"
 
 
   /*
@@ -26,7 +26,7 @@ source "proxmox-iso" "kali-rolling-lab" {
   */
   node = "pve"
   pool = "Lab_Kali"
-  vm_name = "kali-teamplate-packer"
+  vm_name = "kali-template-packer"
   vm_id = 200
   tags = "student;lab;kali;attack;disposable"
   onboot = false
@@ -78,7 +78,7 @@ source "proxmox-iso" "kali-rolling-lab" {
   network_adapters {
       model = "virtio"
       bridge = "vmbr0"
-      firewall = true
+      firewall = false
     }
   // nameserver = 
   // searchdomain = 
@@ -86,6 +86,7 @@ source "proxmox-iso" "kali-rolling-lab" {
     /*
       ### PACKER Boot Commands
     */
+    boot_wait = "10s"
     boot_command = [
         "<esc><wait>",
         "/install.amd/vmlinuz<wait>",
@@ -104,16 +105,15 @@ source "proxmox-iso" "kali-rolling-lab" {
         " keyboard-configuration/layout=USA<wait>",
         " keyboard-configuration/variant=USA<wait>",
         " locale=en_US<wait>",
-        " netcfg/get_domain=vm<wait>",
-        " netcfg/get_hostname={{.Name}}<wait>",
+        // " netcfg/get_domain=vm<wait>",
+        // " netcfg/get_hostname={{.Name}}<wait>",
         " grub-installer/bootdev=/dev/sda<wait>",
         " noapic<wait>",
         " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/kali-preseed.cfg auto=true priority=critical",
         " -- <wait>",
         "<enter><wait>"
     ]
-    boot = "c"
-    boot_wait = "10s"
+    // boot = "ncd"
 
     # PACKER Autoinstall Settings
     http_directory = "http" 
@@ -143,7 +143,8 @@ source "proxmox-iso" "kali-rolling-lab" {
   */
   template_name = "Kali-Rolling-Lab"
   template_description = "Kali Rolling for the Web Application Hacking Lab."
-  ssh_username = var.SSH_USERNAME
-  ssh_password = var.PM_PASSWORD
+  ssh_username = "${var.SSH_USERNAME}"
+  ssh_password = "${var.SSH_PASSWORD}"
+  ssh_timeout = "20m"
 }
 
